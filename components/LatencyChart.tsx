@@ -55,16 +55,17 @@ const EVENT_COLORS: Record<string, { fill: string; stroke: string; glow: string;
 export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyChartProps) {
   const maxLatency = Math.max(...data.map((d) => d.latencyMs));
   const minLatency = Math.min(...data.map((d) => d.latencyMs));
-  const chartHeight = 85;
+  const graphAreaHeight = 78;
+  const totalSvgHeight = 112;
   const chartWidth = 500;
   const paddingX = 24;
-  const paddingY = 14;
+  const paddingY = 12;
 
   const points = data.map((d, index) => {
     const x = paddingX + (index / (data.length - 1)) * (chartWidth - paddingX * 2);
     // Invert y: high latency is near the top
     const normalizedY = (d.latencyMs - minLatency) / (maxLatency - minLatency || 1);
-    const y = chartHeight - paddingY - normalizedY * (chartHeight - paddingY * 2);
+    const y = graphAreaHeight - paddingY - normalizedY * (graphAreaHeight - paddingY * 2);
     return { x, y, ...d };
   });
 
@@ -79,7 +80,7 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
   }, "");
 
   // Area under the curve
-  const areaD = `${pathD} L ${points[points.length - 1].x} ${chartHeight - 2} L ${points[0].x} ${chartHeight - 2} Z`;
+  const areaD = `${pathD} L ${points[points.length - 1].x} ${graphAreaHeight} L ${points[0].x} ${graphAreaHeight} Z`;
 
   const activePoint = points.find((pt) => pt.eventId && pt.eventId === selectedEventId);
 
@@ -117,12 +118,11 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
         )}
       </div>
 
-      <div className="relative w-full overflow-hidden">
+      <div className="relative w-full">
         <svg
-          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-          className="w-full h-22 overflow-visible cursor-pointer select-none"
-          preserveAspectRatio="none"
-          aria-label="API Latency trend chart synchronized with timeline events"
+          viewBox={`0 0 ${chartWidth} ${totalSvgHeight}`}
+          className="w-full h-auto overflow-visible select-none"
+          aria-label="API Latency trend chart with exact-aligned timestamp nodes"
           role="img"
         >
           <defs>
@@ -144,9 +144,9 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
           {/* SLA Threshold Reference Line (2000ms) */}
           <line
             x1={paddingX}
-            y1={chartHeight - paddingY - ((2000 - minLatency) / (maxLatency - minLatency)) * (chartHeight - paddingY * 2)}
+            y1={graphAreaHeight - paddingY - ((2000 - minLatency) / (maxLatency - minLatency)) * (graphAreaHeight - paddingY * 2)}
             x2={chartWidth - paddingX}
-            y2={chartHeight - paddingY - ((2000 - minLatency) / (maxLatency - minLatency)) * (chartHeight - paddingY * 2)}
+            y2={graphAreaHeight - paddingY - ((2000 - minLatency) / (maxLatency - minLatency)) * (graphAreaHeight - paddingY * 2)}
             stroke="currentColor"
             strokeDasharray="4 3"
             className="text-red-400/50 dark:text-red-500/50"
@@ -154,7 +154,7 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
           />
           <text
             x={chartWidth - paddingX - 4}
-            y={chartHeight - paddingY - ((2000 - minLatency) / (maxLatency - minLatency)) * (chartHeight - paddingY * 2) - 4}
+            y={graphAreaHeight - paddingY - ((2000 - minLatency) / (maxLatency - minLatency)) * (graphAreaHeight - paddingY * 2) - 4}
             textAnchor="end"
             className="fill-red-500 dark:fill-red-400 text-[8px] font-mono opacity-80"
           >
@@ -171,7 +171,7 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
                 x1={activePoint.x}
                 y1={paddingY - 4}
                 x2={activePoint.x}
-                y2={chartHeight - 4}
+                y2={graphAreaHeight + 8}
                 stroke={activePoint.eventId && EVENT_COLORS[activePoint.eventId] ? EVENT_COLORS[activePoint.eventId].fill : "rgba(245, 158, 11, 0.6)"}
                 strokeWidth="1.5"
                 strokeDasharray="2 2"
@@ -243,58 +243,81 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
 
             return null;
           })}
-        </svg>
-      </div>
+          {/* Exact-aligned Axis Timestamps and Node Labels inside SVG */}
+          {points.map((pt, i) => {
+            const hasEvent = Boolean(pt.eventId);
+            const isSelected = pt.eventId && pt.eventId === selectedEventId;
+            const config = pt.eventId ? EVENT_COLORS[pt.eventId] : null;
 
-      {/* Axis timestamps synchronized with timeline events & colors */}
-      <div className="flex justify-between items-center text-[9px] sm:text-[10px] font-mono text-neutral-400 dark:text-neutral-500 mt-1.5 px-0.5 sm:px-1 overflow-x-hidden gap-1">
-        <span className="hidden xs:inline">14:20</span>
-        <button
-          type="button"
-          onClick={() => onSelectEvent?.("evt-1")}
-          className={`transition-all hover:underline truncate ${
-            selectedEventId === "evt-1" ? "text-blue-600 dark:text-blue-400 underline font-bold" : "text-blue-600/80 dark:text-blue-400/80"
-          }`}
-        >
-          <span className="hidden sm:inline">14:28 </span>(Deploy)
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectEvent?.("evt-2")}
-          className={`transition-all hover:underline truncate ${
-            selectedEventId === "evt-2" ? "text-amber-600 dark:text-amber-400 underline font-bold" : "text-amber-600/80 dark:text-amber-400/80"
-          }`}
-        >
-          <span className="hidden sm:inline">14:31 </span>(DB)
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectEvent?.("evt-3")}
-          className={`transition-all hover:underline truncate ${
-            selectedEventId === "evt-3" ? "text-red-600 dark:text-red-400 underline font-bold" : "text-red-600/80 dark:text-red-400/80"
-          }`}
-        >
-          <span className="hidden sm:inline">14:32 </span>(Alert)
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectEvent?.("evt-4")}
-          className={`transition-all hover:underline truncate ${
-            selectedEventId === "evt-4" ? "text-purple-600 dark:text-purple-400 underline font-bold" : "text-purple-600/80 dark:text-purple-400/80"
-          }`}
-        >
-          <span className="hidden sm:inline">14:34 </span>(Rollback)
-        </button>
-        <button
-          type="button"
-          onClick={() => onSelectEvent?.("evt-5")}
-          className={`transition-all hover:underline truncate ${
-            selectedEventId === "evt-5" ? "text-emerald-600 dark:text-emerald-400 underline font-bold" : "text-emerald-600/80 dark:text-emerald-400/80"
-          }`}
-        >
-          <span className="hidden sm:inline">14:36 </span>(Restored)
-        </button>
-        <span className="hidden xs:inline">14:38</span>
+            // Only render timestamp labels for start, end, and incident events
+            if (i === 0 || i === points.length - 1 || hasEvent) {
+              const labelColor = isSelected
+                ? config?.fill || "#ffffff"
+                : config
+                ? config.fill
+                : "currentColor";
+
+              return (
+                <g
+                  key={`label-${i}`}
+                  className={hasEvent ? "cursor-pointer" : "pointer-events-none"}
+                  onClick={() => pt.eventId && onSelectEvent?.(pt.eventId)}
+                >
+                  {/* Subtle connecting tick mark directly below dot */}
+                  {hasEvent && (
+                    <line
+                      x1={pt.x}
+                      y1={graphAreaHeight - paddingY + 4}
+                      x2={pt.x}
+                      y2={graphAreaHeight + 4}
+                      stroke={isSelected ? config?.fill || "currentColor" : "currentColor"}
+                      strokeWidth={isSelected ? 1.5 : 1}
+                      strokeDasharray={isSelected ? undefined : "2 2"}
+                      opacity={isSelected ? 0.8 : 0.25}
+                      className={isSelected ? "" : "text-neutral-400 dark:text-neutral-600"}
+                    />
+                  )}
+
+                  {/* Primary Timestamp directly under dot X */}
+                  <text
+                    x={pt.x}
+                    y={graphAreaHeight + 17}
+                    textAnchor="middle"
+                    className={`font-mono transition-all duration-150 select-none ${
+                      isSelected
+                        ? "font-bold text-[10.5px]"
+                        : hasEvent
+                        ? "font-semibold text-[9.5px] hover:opacity-100"
+                        : "text-[8.5px] fill-neutral-400 dark:fill-neutral-600"
+                    }`}
+                    fill={hasEvent ? labelColor : undefined}
+                    opacity={isSelected ? 1 : hasEvent ? 0.9 : 0.5}
+                  >
+                    {pt.time}
+                  </text>
+
+                  {/* Secondary Label (Deploy, DB, Alert, etc.) */}
+                  {hasEvent && config && (
+                    <text
+                      x={pt.x}
+                      y={graphAreaHeight + 28}
+                      textAnchor="middle"
+                      className={`font-mono text-[8.5px] transition-all duration-150 select-none ${
+                        isSelected ? "font-bold" : "font-medium"
+                      }`}
+                      fill={labelColor}
+                      opacity={isSelected ? 1 : 0.8}
+                    >
+                      {config.label}
+                    </text>
+                  )}
+                </g>
+              );
+            }
+
+            return null;
+          })}
+        </svg>
       </div>
     </div>
   );
