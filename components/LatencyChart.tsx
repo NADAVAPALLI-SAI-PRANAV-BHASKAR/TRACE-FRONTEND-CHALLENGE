@@ -209,10 +209,13 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
               return (
                 <g
                   key={i}
-                  className="transition-transform duration-200 hover:scale-125 cursor-pointer"
+                  className="cursor-pointer group"
                   onClick={() => pt.eventId && onSelectEvent?.(pt.eventId)}
                 >
-                  {/* Ping animation on peak or selected */}
+                  {/* Invisible generous hit target to prevent mouse jitter/vibration */}
+                  <circle cx={pt.x} cy={pt.y} r="14" fill="transparent" />
+
+                  {/* Ping animation on peak or selected - pointer-events-none to prevent mouse flickering */}
                   {(pt.highlight || isSelected) && (
                     <circle
                       cx={pt.x}
@@ -220,18 +223,19 @@ export function LatencyChart({ data, selectedEventId, onSelectEvent }: LatencyCh
                       r={isSelected ? "9" : "7"}
                       fill={nodeColor}
                       opacity="0.35"
-                      className="animate-ping"
+                      className="animate-ping pointer-events-none"
                     />
                   )}
-                  {/* Node Body */}
+
+                  {/* Node Body with smooth radius transition without SVG origin distortion */}
                   <circle
                     cx={pt.x}
                     cy={pt.y}
-                    r={isSelected ? "5.5" : hasEvent ? "4.5" : "3.5"}
+                    r={isSelected ? "6" : hasEvent ? "4.5" : "3.5"}
                     fill={nodeColor}
                     stroke="#ffffff"
                     strokeWidth={isSelected ? "2" : "1.5"}
-                    className="dark:stroke-neutral-900 shadow-sm"
+                    className="dark:stroke-neutral-900 shadow-sm transition-all duration-150 group-hover:stroke-width-[2.5px] group-hover:brightness-110 pointer-events-none"
                   />
                 </g>
               );
