@@ -12,13 +12,18 @@ import { useKonamiCode } from "@/hooks/useKonamiCode";
 export default function Home() {
   const [easterEggActive, setEasterEggActive] = useState(false);
   const [incidentId, setIncidentId] = useState("INC-8492");
+  const [isPillFlipping, setIsPillFlipping] = useState(false);
 
-  // Rotate random simulated incident numbers
+  // Rotate random simulated incident numbers with smooth transition animation
   useEffect(() => {
     const interval = setInterval(() => {
-      const randomNum = Math.floor(1000 + Math.random() * 9000);
-      setIncidentId(`INC-${randomNum}`);
-    }, 3200);
+      setIsPillFlipping(true);
+      setTimeout(() => {
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        setIncidentId(`INC-${randomNum}`);
+        setIsPillFlipping(false);
+      }, 250);
+    }, 3500);
     return () => clearInterval(interval);
   }, []);
 
@@ -40,14 +45,18 @@ export default function Home() {
       {/* Hero Section */}
       <main className="w-full">
         <section className="relative px-4 pt-8 pb-6 sm:px-6 md:pt-12 lg:pt-14 max-w-4xl lg:max-w-5xl mx-auto text-center">
-          {/* Subtle live indicator badge with rotating incident number */}
-          <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-mono bg-amber-500/10 dark:bg-amber-400/10 text-amber-900 dark:text-amber-300 mb-5 border border-amber-500/30 dark:border-amber-400/25 shadow-sm backdrop-blur-sm transition-all duration-300 hover:border-amber-500/50">
+          {/* Subtle live indicator badge with rotating incident number and transition effects */}
+          <div className="inline-flex max-w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-mono bg-amber-500/10 dark:bg-amber-400/10 text-amber-900 dark:text-amber-300 mb-5 border border-amber-500/30 dark:border-amber-400/25 shadow-sm backdrop-blur-sm transition-all duration-500 hover:border-amber-500/60 hover:shadow-amber-500/10 hover:shadow-md cursor-default">
             <span className="relative flex h-2 w-2 shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
             </span>
             <span className="text-neutral-600 dark:text-neutral-400 shrink-0">Simulated Incident:</span>
-            <span className="font-bold tracking-wider text-amber-950 dark:text-amber-200 bg-amber-200/50 dark:bg-amber-900/50 px-1.5 py-0.5 rounded font-mono transition-all duration-300">
+            <span
+              className={`font-bold tracking-wider text-amber-950 dark:text-amber-200 bg-amber-200/60 dark:bg-amber-900/60 px-1.5 py-0.5 rounded font-mono transition-all duration-300 transform ${
+                isPillFlipping ? "opacity-0 scale-95 -translate-y-1" : "opacity-100 scale-100 translate-y-0"
+              }`}
+            >
               {incident.id}
             </span>
           </div>
