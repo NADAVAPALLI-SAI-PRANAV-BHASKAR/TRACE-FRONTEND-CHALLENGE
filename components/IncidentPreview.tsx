@@ -11,7 +11,67 @@ interface IncidentPreviewProps {
 
 export function IncidentPreview({ incident }: IncidentPreviewProps) {
   const [selectedEventId, setSelectedEventId] = useState<string>("evt-2");
-  const isInvestigating = incident.status === "Investigating";
+
+  // Dynamically derive the active event status based on which tab/node is selected
+  const activeEvent = incident.timeline.find((e) => e.id === selectedEventId) || incident.timeline[0];
+
+  const getEventStatusConfig = (eventId: string, defaultStatus: string) => {
+    if (incident.status === "Resolved") {
+      return {
+        status: "Resolved",
+        badgeStyle: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 shadow-sm hover:shadow-emerald-500/10",
+        dotStyle: "bg-emerald-500",
+        pulsing: false,
+      };
+    }
+
+    switch (eventId) {
+      case "evt-1": // Deploy
+        return {
+          status: "Deployed",
+          badgeStyle: "bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 shadow-sm hover:shadow-blue-500/10",
+          dotStyle: "bg-blue-500",
+          pulsing: false,
+        };
+      case "evt-2": // Database
+        return {
+          status: "Investigating",
+          badgeStyle: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 shadow-sm hover:shadow-amber-500/10",
+          dotStyle: "bg-amber-500",
+          pulsing: true,
+        };
+      case "evt-3": // Alert
+        return {
+          status: "Triggered (P1)",
+          badgeStyle: "bg-red-50 text-red-800 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800 shadow-sm hover:shadow-red-500/10",
+          dotStyle: "bg-red-500",
+          pulsing: true,
+        };
+      case "evt-4": // Engineer Rollback
+        return {
+          status: "Mitigating",
+          badgeStyle: "bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800 shadow-sm hover:shadow-purple-500/10",
+          dotStyle: "bg-purple-500",
+          pulsing: true,
+        };
+      case "evt-5": // Resolved
+        return {
+          status: "Resolved",
+          badgeStyle: "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 shadow-sm hover:shadow-emerald-500/10",
+          dotStyle: "bg-emerald-500",
+          pulsing: false,
+        };
+      default:
+        return {
+          status: defaultStatus,
+          badgeStyle: "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 shadow-sm hover:shadow-amber-500/10",
+          dotStyle: "bg-amber-500",
+          pulsing: true,
+        };
+    }
+  };
+
+  const statusConfig = getEventStatusConfig(selectedEventId, incident.status);
 
   return (
     <section
@@ -36,23 +96,21 @@ export function IncidentPreview({ incident }: IncidentPreviewProps) {
             Demo Data
           </span>
           <span
-            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full font-medium border transition-all duration-300 transform hover:scale-105 cursor-default ${
-              isInvestigating
-                ? "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 shadow-sm hover:shadow-amber-500/10"
-                : "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 shadow-sm hover:shadow-emerald-500/10"
-            }`}
+            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full font-medium border transition-all duration-300 transform hover:scale-105 cursor-default ${statusConfig.badgeStyle}`}
           >
             <span
-              className={`w-1.5 h-1.5 rounded-full transition-colors duration-300 ${
-                isInvestigating ? "bg-amber-500 animate-pulse" : "bg-emerald-500"
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${statusConfig.dotStyle} ${
+                statusConfig.pulsing ? "animate-pulse" : ""
               }`}
             />
-            {incident.status}
+            <span>{statusConfig.status}</span>
           </span>
           <span className="px-1.5 sm:px-2 py-0.5 rounded bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 transition-colors duration-200">
             {incident.severity}
           </span>
-          <span className="text-neutral-500 dark:text-neutral-400 hidden sm:inline">{incident.timestamp}</span>
+          <span className="text-neutral-500 dark:text-neutral-400 hidden sm:inline">
+            Aug 18 · {activeEvent?.time || "14:32"} UTC
+          </span>
         </div>
       </div>
 
