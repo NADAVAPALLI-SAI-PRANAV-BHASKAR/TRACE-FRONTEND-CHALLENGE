@@ -17,6 +17,7 @@ export interface LatencyDataPoint {
   latencyMs: number;
   highlight?: boolean;
   label?: string;
+  eventId?: string; // Links data point to a timeline event
 }
 
 export interface IncidentData {
@@ -44,14 +45,14 @@ export const DEMO_INCIDENT: IncidentData = {
   latencyData: [
     { time: "14:20", latencyMs: 140 },
     { time: "14:24", latencyMs: 145 },
-    { time: "14:28", latencyMs: 180, label: "v2.8.1 Deploy" },
+    { time: "14:28", latencyMs: 180, label: "v2.8.1 Deploy", eventId: "evt-1" },
     { time: "14:30", latencyMs: 650 },
-    { time: "14:31", latencyMs: 1420 },
-    { time: "14:32", latencyMs: 2340, highlight: true, label: "p95 > 2s Alert" },
+    { time: "14:31", latencyMs: 1420, eventId: "evt-2" },
+    { time: "14:32", latencyMs: 2340, highlight: true, label: "p95 > 2s Alert", eventId: "evt-3" },
     { time: "14:33", latencyMs: 2180 },
-    { time: "14:34", latencyMs: 1650, label: "Rollback initiated" },
+    { time: "14:34", latencyMs: 1650, label: "Rollback initiated", eventId: "evt-4" },
     { time: "14:35", latencyMs: 420 },
-    { time: "14:36", latencyMs: 148, label: "Baseline restored" },
+    { time: "14:36", latencyMs: 148, label: "Baseline restored", eventId: "evt-5" },
     { time: "14:38", latencyMs: 142 },
   ],
   timeline: [
