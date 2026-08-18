@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { MouseFollower } from "@/components/MouseFollower";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased scroll-smooth`}
     >
-      <body className="min-h-full flex flex-col font-sans overflow-x-hidden">{children}</body>
+      <body className="min-h-full flex flex-col font-sans overflow-x-hidden">
+        <MouseFollower />
+        {children}
+      </body>
     </html>
   );
 }
